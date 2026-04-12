@@ -1,69 +1,71 @@
 # CRUD com Express
 
-API RESTful básica com TypeScript e Express.
+API RESTful com TypeScript, Express e autenticação JWT.
 
-## Tecnologias Atuais
+## Tecnologias
 
 | Tecnologia | Versão | Uso |
 |------------|--------|-----|
 | Express | 5.2.1 | Framework web |
 | TypeScript | 6.0.2 | Linguagem tipada |
-| tsx | - | Executador de TypeScript |
+| tsx | 4.21.0 | Executador de TypeScript |
 | nodemon | 3.1.14 | Auto-reload do servidor |
 | cors | 2.8.6 | Permitir requisições de outros domínios |
 | dotenv | 17.4.1 | Variáveis de ambiente |
-
-## Como Rodar
-
-```bash
-# Instalar dependências
-npm install
-
-# Rodar em modo desenvolvimento
-npm run dev
-
-# O servidor estará em http://localhost:3000
-```
+| bcryptjs | 3.0.3 | Hash de senhas |
+| jsonwebtoken | 9.0.3 | Autenticação JWT |
 
 ## Endpoints
+
+### Autenticação
+
+| Método | URL | Body (JSON) | Descrição |
+|--------|-----|-------------|-----------|
+| POST | /auth/register | `{ "name", "email", "password" }` | Criar conta e receber token |
+| POST | /auth/login | `{ "email", "password" }` | Login e receber token |
+
+### Usuários
 
 | Método | URL | Body (JSON) | Descrição |
 |--------|-----|-------------|-----------|
 | GET | /users | - | Lista todos os usuários |
 | GET | /users/:id | - | Busca um usuário pelo ID |
-| POST | /users | { "name", "email" } | Cria um novo usuário |
-| PUT | /users/:id | { "name"?, "email"? } | Atualiza um usuário |
+| PUT | /users/:id | `{ "name"?, "email"? }` | Atualiza um usuário |
 | DELETE | /users/:id | - | Remove um usuário |
 
-## Estrutura do Projeto
+## Estrutura do projeto
 
 ```
 src/
-├── app.ts              # Configuração do Express
-├── server.ts          # Ponto de entrada
+├── app.ts                    # Configuração do Express
+├── server.ts                # Ponto de entrada
+├── database/
+│   └── memory.ts            # Banco de dados em memória
 ├── controllers/
-│   └── users.controller.ts  # Lógica das rotas
+│   ├── auth.controller.ts   # Lógica de autenticação
+│   └── users.controller.ts  # Lógica de usuários
 ├── routes/
-│   └── users.routes.ts      # Definição das rotas
+│   ├── auth.routes.ts       # Rotas de autenticação
+│   └── users.routes.ts      # Rotas de usuários
 └── types/
-    └── user.ts             # Tipos TypeScript
+    └── user.ts              # Tipos TypeScript
 ```
 
-## Próximos passos (Roadmap)
+## Segurança
 
-### 1. Sistema de Login com bcrypt
+- Senhas são hasheadas com bcrypt (10 rounds de salt)
+- Autenticação via JWT com expiração de 1 hora
+- JWT_SECRET deve ser definido no arquivo `.env`
 
-- Hash de senhas com `bcrypt`
-- JWT para autenticação
-- Middleware de proteção de rotas
+## Roadmap
 
-### 2. Banco de dados PostgreSQL
+### 1. Banco de dados PostgreSQL
 
 - Substituir array em memória por banco real
 - Criar tabelas de usuários
 - Migrations para versionamento do banco
 
-### 3. Prisma ORM
+### 2. Prisma ORM
 
 - Configurar Prisma com PostgreSQL
 - Usar Prisma Client para consultas
@@ -72,7 +74,7 @@ src/
   - Migrations automáticas
   - Queries type-safe
 
-### 4. Middlewares
+### 3. Middlewares
 
 | Middleware | Função |
 |------------|--------|
@@ -81,4 +83,7 @@ src/
 | helmet | Segurança (headers HTTP) |
 | express-validator | Validação de dados |
 
----
+### 4. Proteger rotas de usuários
+
+- Adicionar middleware de autenticação
+- Rotas de usuários exigem token JWT válido

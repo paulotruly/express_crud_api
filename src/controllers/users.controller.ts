@@ -1,11 +1,6 @@
 import type { Request, Response } from "express";
 import type { User, CreateUserDTO, UpdateUserDTO } from '../types/user.ts';
-
-const users: User[] = [
-    { id: '1', name: 'John Doe', email: 'john.doe@example.com', createdAt: new Date(), updatedAt: new Date() },
-    { id: '2', name: 'Jane Smith', email: 'jane.smith@example.com', createdAt: new Date(), updatedAt: new Date() }
-];
-let nextId = 3;
+import {users, generateId} from '../database/memory.js';
 
 export const getUsers = (_req: Request, res: Response) => {
     res.json(users);
@@ -25,7 +20,7 @@ export const createUser = (req: Request, res: Response) => {
         return res.status(400).json({ error: 'Name and email are required' });
     }
     const newUser: User = {
-        id: String(nextId++),
+        id: generateId(),
         ...data,
         createdAt: new Date(),
         updatedAt: new Date()
@@ -45,6 +40,7 @@ export const updateUser = (req: Request, res: Response) => {
         id: existingUser.id,
         name: data.name ?? existingUser.name, 
         email: data.email ?? existingUser.email,
+        password: data.password ?? existingUser.password,
         createdAt: existingUser.createdAt,
         updatedAt: new Date()
     };
