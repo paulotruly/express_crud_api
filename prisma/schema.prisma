@@ -12,10 +12,10 @@ datasource db {
 }
 
 model User {
-  id Datetime @id @default(cuid())
+  id String @id @default(cuid())
   name String
   email String @unique
   password String
-  createdAt Datetime @default(now())
-  updatedAt Datetime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

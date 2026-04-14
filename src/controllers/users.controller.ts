@@ -1,58 +1,56 @@
 import type { Request, Response } from "express";
 import type { User, CreateUserDTO, UpdateUserDTO } from '../types/user.ts';
-import {users, generateId} from '../database/memory.js';
+import {prisma} from '../database/prisma.js';
 
 export const getUsers = (_req: Request, res: Response) => {
+    const users = prisma.user.findMany();
     res.json(users);
 }
 
 export const getUserById = (req: Request, res: Response) => {
-    const user = users.find(u => u.id === req.params.id);
+    const user = prisma.user.findUnique({
+        where: { id: req.params.id }
+    });
+
     if (!user) {
         return res.status(404).json({ error: 'User not found' });
     }
+
     res.json(user);
 }
 
-export const createUser = (req: Request, res: Response) => {
-    const data: CreateUserDTO = req.body;
-    if (!data.name || !data.email) {
-        return res.status(400).json({ error: 'Name and email are required' });
+export const createUser = async (req: Request, res: Response) => {
+    const {name, email, password} = req.body;
+
+    if (!name || !email || !password) {
+        return res.status(400).json({ error: 'Name, email and password are required' });
     }
-    const newUser: User = {
-        id: generateId(),
-        ...data,
-        createdAt: new Date(),
-        updatedAt: new Date()
-    };
-    users.push(newUser);
+
+    const newUser = await prisma.user.create({
+        data: {name, email, password}
+    });
     res.status(201).json(newUser);
 }
 
-export const updateUser = (req: Request, res: Response) => {
-    const index = users.findIndex(u => u.id === req.params.id);
-    if (index === -1) {
+export const updateUser = async (req: Request, res: Response) => {
+    const { name, email, password } = req.body;
+    try {
+        const updatedUser = await prisma.user.update({
+            where: { id: req.params.id },
+            data: { name, email, password }
+        });
+        res.json(updatedUser);
+    } catch {
         return res.status(404).json({ error: 'User not found' });
     }
-    const data: UpdateUserDTO = req.body;
-    const existingUser = users[index]!;
-    const updatedUser: User = {
-        id: existingUser.id,
-        name: data.name ?? existingUser.name, 
-        email: data.email ?? existingUser.email,
-        password: data.password ?? existingUser.password,
-        createdAt: existingUser.createdAt,
-        updatedAt: new Date()
-    };
-    users[index] = updatedUser;
-    res.json(updatedUser);
 }
-
-export const deleteUser = (req: Request, res: Response) => {
-    const index = users.findIndex(u => u.id === req.params.id);
-    if (index === -1) {
+export const deleteUser = async (req: Request, res: Response) => {
+    try {
+        await prisma.user.delete({
+            where: { id: req.params.id }
+        });
+        res.status(204).send();
+    } catch {
         return res.status(404).json({ error: 'User not found' });
     }
-    users.splice(index, 1);
-    res.status(204).send();
-};
+}
