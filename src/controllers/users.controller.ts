@@ -2,14 +2,14 @@ import type { Request, Response } from "express";
 import type { User, CreateUserDTO, UpdateUserDTO } from '../types/user.ts';
 import {prisma} from '../database/prisma.js';
 
-export const getUsers = (_req: Request, res: Response) => {
-    const users = prisma.user.findMany();
+export const getUsers = async (_req: Request, res: Response) => {
+    const users = await prisma.user.findMany();
     res.json(users);
 }
 
-export const getUserById = (req: Request, res: Response) => {
-    const user = prisma.user.findUnique({
-        where: { id: req.params.id }
+export const getUserById = async (req: Request, res: Response) => {
+    const user = await prisma.user.findUnique({
+        where: { id: req.params.id as string}
     });
 
     if (!user) {
@@ -36,7 +36,7 @@ export const updateUser = async (req: Request, res: Response) => {
     const { name, email, password } = req.body;
     try {
         const updatedUser = await prisma.user.update({
-            where: { id: req.params.id },
+            where: { id: req.params.id as string},
             data: { name, email, password }
         });
         res.json(updatedUser);
@@ -47,7 +47,7 @@ export const updateUser = async (req: Request, res: Response) => {
 export const deleteUser = async (req: Request, res: Response) => {
     try {
         await prisma.user.delete({
-            where: { id: req.params.id }
+            where: { id: req.params.id as string}
         });
         res.status(204).send();
     } catch {
