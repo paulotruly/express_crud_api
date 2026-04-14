@@ -1,6 +1,6 @@
 # CRUD com Express
 
-API RESTful com TypeScript, Express e autenticação JWT.
+API RESTful com TypeScript, Express, PostgreSQL, Prisma ORM e autenticação JWT.
 
 ## Tecnologias
 
@@ -14,6 +14,9 @@ API RESTful com TypeScript, Express e autenticação JWT.
 | dotenv | 17.4.1 | Variáveis de ambiente |
 | bcryptjs | 3.0.3 | Hash de senhas |
 | jsonwebtoken | 9.0.3 | Autenticação JWT |
+| PostgreSQL | 17/18 | Banco de dados relacional |
+| Prisma | 7.7.0 | ORM para TypeScript |
+| pg | 8.20.0 | Driver PostgreSQL para Node.js |
 
 ## Endpoints
 
@@ -30,17 +33,43 @@ API RESTful com TypeScript, Express e autenticação JWT.
 |--------|-----|-------------|-----------|
 | GET | /users | - | Lista todos os usuários |
 | GET | /users/:id | - | Busca um usuário pelo ID |
-| PUT | /users/:id | `{ "name"?, "email"? }` | Atualiza um usuário |
+| PUT | /users/:id | `{ "name"?, "email"?, "password"? }` | Atualiza um usuário |
 | DELETE | /users/:id | - | Remove um usuário |
 
+## Banco de dados
+
+### PostgreSQL
+
+Banco de dados relacional configurado com collation `C` para evitar problemas de compatibilidade.
+
+**Credenciais padrão:**
+- Host: `localhost`
+- Porta: `5432`
+- Usuário: `postgres`
+- Banco: `crud_express`
+
+### Prisma ORM
+
+Schema definido em `prisma/schema.prisma` com o modelo `User`:
+
+```prisma
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+```
 ## Estrutura do projeto
 
 ```
 src/
 ├── app.ts                    # Configuração do Express
-├── server.ts                # Ponto de entrada
+├── server.ts                 # Ponto de entrada
 ├── database/
-│   └── memory.ts            # Banco de dados em memória
+│   └── prisma.ts            # Cliente Prisma com PostgreSQL
 ├── controllers/
 │   ├── auth.controller.ts   # Lógica de autenticação
 │   └── users.controller.ts  # Lógica de usuários
@@ -49,6 +78,11 @@ src/
 │   └── users.routes.ts      # Rotas de usuários
 └── types/
     └── user.ts              # Tipos TypeScript
+
+prisma/
+└── schema.prisma            # Schema do Prisma
+
+.env                         # Variáveis de ambiente
 ```
 
 ## Segurança
@@ -57,33 +91,44 @@ src/
 - Autenticação via JWT com expiração de 1 hora
 - JWT_SECRET deve ser definido no arquivo `.env`
 
-## Roadmap
+## Configuração
 
-### 1. Banco de dados PostgreSQL
+### Variáveis de ambiente (.env)
 
-- Substituir array em memória por banco real
-- Criar tabelas de usuários
-- Migrations para versionamento do banco
+```env
+PORT=3000
+JWT_SECRET=sua_senha_secreta
+DATABASE_URL="postgresql://postgres:SUA_SENHA@localhost:5432/crud_express"
+```
 
-### 2. Prisma ORM
+### Instalação do banco PostgreSQL
 
-- Configurar Prisma com PostgreSQL
-- Usar Prisma Client para consultas
-- Benefícios:
-  - Type safety completo
-  - Migrations automáticas
-  - Queries type-safe
+1. Instale o PostgreSQL (versão 17 ou 18)
+2. Crie o banco de dados:
+   ```sql
+   CREATE DATABASE crud_express WITH LC_COLLATE = 'C' LC_CTYPE = 'C';
+   ```
+3. Configure a `DATABASE_URL` no `.env` com sua senha
 
-### 3. Middlewares
+## Próximos passos
+
+### 1. Proteger rotas de usuários
+
+- Adicionar middleware de autenticação JWT
+- Rotas de usuários devem exigir token válido
+- Usuário só pode editar/deletar a si mesmo
+
+### 2. Middlewares
 
 | Middleware | Função |
 |------------|--------|
-| CORS | Já instalado, configurar para domínios específicos |
-| Morgan | Logging de requisições HTTP |
 | helmet | Segurança (headers HTTP) |
 | express-validator | Validação de dados |
+| morgan | Logging de requisições HTTP |
 
-### 4. Proteger rotas de usuários
+### 3. Melhorias
 
-- Adicionar middleware de autenticação
-- Rotas de usuários exigem token JWT válido
+- Documentação com Swagger/OpenAPI
+- Testes automatizados
+- Paginação de listagens
+- Upload de imagens/perfil
