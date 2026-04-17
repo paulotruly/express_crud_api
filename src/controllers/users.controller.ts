@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import type { User, CreateUserDTO, UpdateUserDTO } from '../types/user.ts';
 import {prisma} from '../database/prisma.js';
+import type { AuthRequest } from '../middlewares/auth.middlewares.js';
 
 export const getUsers = async (_req: Request, res: Response) => {
     const users = await prisma.user.findMany();
@@ -32,11 +33,11 @@ export const createUser = async (req: Request, res: Response) => {
     res.status(201).json(newUser);
 }
 
-export const updateUser = async (req: Request, res: Response) => {
+export const updateUser = async (req: AuthRequest, res: Response) => {
     const { name, email, password } = req.body;
     try {
         const updatedUser = await prisma.user.update({
-            where: { id: req.params.id as string},
+            where: { id: req.user!.id},
             data: { name, email, password }
         });
         res.json(updatedUser);
@@ -44,10 +45,10 @@ export const updateUser = async (req: Request, res: Response) => {
         return res.status(404).json({ error: 'User not found' });
     }
 }
-export const deleteUser = async (req: Request, res: Response) => {
+export const deleteUser = async (req: AuthRequest, res: Response) => {
     try {
         await prisma.user.delete({
-            where: { id: req.params.id as string}
+            where: { id: req.user!.id}
         });
         res.status(204).send();
     } catch {
