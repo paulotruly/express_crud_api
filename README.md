@@ -11,6 +11,7 @@ API RESTful com TypeScript, Express, PostgreSQL, Prisma ORM e autenticação JWT
 | tsx | 4.21.0 | Executador de TypeScript |
 | nodemon | 3.1.14 | Auto-reload do servidor |
 | cors | 2.8.6 | Permitir requisições de outros domínios |
+| morgan | 1.10.0 | Logging de requisições HTTP |
 | dotenv | 17.4.1 | Variáveis de ambiente |
 | bcryptjs | 3.0.3 | Hash de senhas |
 | jsonwebtoken | 9.0.3 | Autenticação JWT |
@@ -42,12 +43,6 @@ API RESTful com TypeScript, Express, PostgreSQL, Prisma ORM e autenticação JWT
 
 Banco de dados relacional configurado com collation `C` para evitar problemas de compatibilidade.
 
-**Credenciais padrão:**
-- Host: `localhost`
-- Porta: `5432`
-- Usuário: `postgres`
-- Banco: `crud_express`
-
 ### Prisma ORM
 
 Schema definido em `prisma/schema.prisma` com o modelo `User`:
@@ -62,6 +57,7 @@ model User {
   updatedAt DateTime @updatedAt
 }
 ```
+
 ## Estrutura do projeto
 
 ```
@@ -76,6 +72,8 @@ src/
 ├── routes/
 │   ├── auth.routes.ts       # Rotas de autenticação
 │   └── users.routes.ts      # Rotas de usuários
+├── middlewares/
+│   └── auth.middlewares.ts  # Middleware de autenticação JWT
 └── types/
     └── user.ts              # Tipos TypeScript
 
@@ -90,43 +88,19 @@ prisma/
 - Senhas são hasheadas com bcrypt (10 rounds de salt)
 - Autenticação via JWT com expiração de 1 hora
 - JWT_SECRET deve ser definido no arquivo `.env`
-
-## Configuração
-
-### Variáveis de ambiente (.env)
-
-```env
-PORT=3000
-JWT_SECRET=sua_senha_secreta
-DATABASE_URL="postgresql://postgres:SUA_SENHA@localhost:5432/crud_express"
-```
-
-### Instalação do banco PostgreSQL
-
-1. Instale o PostgreSQL (versão 17 ou 18)
-2. Crie o banco de dados:
-   ```sql
-   CREATE DATABASE crud_express WITH LC_COLLATE = 'C' LC_CTYPE = 'C';
-   ```
-3. Configure a `DATABASE_URL` no `.env` com sua senha
+- Rotas PUT e DELETE protegidas com middleware de autenticação
+- Usuário só pode editar/deletar seus próprios dados
 
 ## Próximos passos
 
-### 1. Proteger rotas de usuários
-
-- Adicionar middleware de autenticação JWT
-- Rotas de usuários devem exigir token válido
-- Usuário só pode editar/deletar a si mesmo
-
-### 2. Middlewares
+### 1. Middlewares a adicionar
 
 | Middleware | Função |
 |------------|--------|
 | helmet | Segurança (headers HTTP) |
 | express-validator | Validação de dados |
-| morgan | Logging de requisições HTTP |
 
-### 3. Melhorias
+### 2. Melhorias
 
 - Documentação com Swagger/OpenAPI
 - Testes automatizados
