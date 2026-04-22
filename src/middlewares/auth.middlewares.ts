@@ -3,6 +3,21 @@ import jwt from "jsonwebtoken";
 
 const SECRET = process.env._JWT_SECRET || "secret";
 
+// listando quais métodos https e rotas podem ser acessadas sem o token
+const allowedPaths = {
+  "GET": ["/users/*"], // qualquer rota de usuários
+  "POST": ["/register", "/login"], // login e registro de usuários
+} as const;
+
+// recebe a rota da requisição (path) e a rota permitida (pattern)
+function matchPatch(path: string, pattern: string): boolean {
+  if (pattern.endsWith("/*")) { // se a rota termina com "/*" (cobre todas as rotas e seus endpoints)
+    const prefix = pattern.slice(0, -1); // remove o "/*"
+    return path.startsWith(prefix); // retorna True se o path começa com o prefixo 
+  }
+  return path === pattern; // se não termina com "/*", faz comparação exata
+}
+
 export interface AuthRequest extends Request { // extende o tipo 'Request' pra adicionar a propriedade "user", sendo opcional, porque nem toda
 // requisição tem um token, por exemplo, pode haver rotas públicas, mas se tiver, o middleware aidicona o "user" ao "req"
     user?: {
@@ -11,9 +26,18 @@ export interface AuthRequest extends Request { // extende o tipo 'Request' pra a
     };
 }
 
-// declara uma função middleware que recebe o obojeto da requisição, "req" (agora com o AuthRequest)
+// declara uma função middleware que recebe o objeto da requisição, "req" (agora com o AuthRequest)
 // 'res' -> envio de resposta e 'next' -> função pra prosseguir ao próx middleware
 export const authMiddleware = (req: AuthRequest, res: Response, next: NextFunction) => {
+  const method = req.method as keyof typeof allowedPaths; // pega o método da requisição e força o tipo pro typescript aceitar como chave do allowedPaths
+  const path = req.path; // pega o caminho da rota
+
+  const isPublicRoute = allowedPaths[method]?.some(pattern => matchPatch(path, pattern)); // verifica se existe uma rota no allowedPaths que dá match com o path atual
+  
+  if (isPublicRoute) { // se existir, é porque é pública, logo ela segue pra próxima função
+    return next();
+  }
+  
   const authHeader = req.headers.authorization; // pega o header da requisição ex:. "Bearer 242DSDFGasd342dasf34as.."
   
   if (!authHeader) { // se não houver, retorna erro 401
