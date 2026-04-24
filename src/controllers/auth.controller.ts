@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { prisma } from "../database/prisma.js";
+import { sendEmail } from "../mail/email.js";
 
 const SECRET = process.env.JWT_SECRET || "secret"; // essa variável de ambiente é usada para assinar os tokens JWT,
 // garantindo que eles sejam seguros e não possam ser facilmente falsificados. 
@@ -22,6 +23,10 @@ export const register = async (req: Request, res: Response) => {
     const newUser = await prisma.user.create({
         data: { name, email, password: hashedPassword }
     }); // cria o novo usuário no banco de dados usando prisma
+
+    await sendEmail(
+        newUser.email, "Bem vindo!", "<p> Seu registro foi efetuado com sucesso! </p>"
+    );
 
     const token = jwt.sign({id: newUser.id, email: newUser.email}, SECRET, { expiresIn: '1h'}); // gerando um token JWT para o usuário recém-registrado,
     // o token inclui o ID e email do usuário e tem uma expiração de 1 hora
