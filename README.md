@@ -18,6 +18,8 @@ API RESTful com TypeScript, Express, PostgreSQL, Prisma ORM e autenticação JWT
 | PostgreSQL | 17/18 | Banco de dados relacional |
 | Prisma | 7.7.0 | ORM para TypeScript |
 | pg | 8.20.0 | Driver PostgreSQL para Node.js |
+| nodemailer | 8.0.6 | Envio de emails via SMTP |
+| Mailtrap | - | Servidor de emails para testes |
 
 ## Endpoints
 
@@ -91,18 +93,46 @@ prisma/
 - Rotas PUT e DELETE protegidas com middleware de autenticação
 - Usuário só pode editar/deletar seus próprios dados
 
-## Próximos passos
+## Email
 
-### 1. Middlewares a adicionar
+### Mailtrap
 
-| Middleware | Função |
-|------------|--------|
-| helmet | Segurança (headers HTTP) |
-| express-validator | Validação de dados |
+Serviço de email para testes que captura e exibe emails enviados pela aplicação durante o desenvolvimento.
 
-### 2. Melhorias
+### Configuração
 
-- Documentação com Swagger/OpenAPI
-- Testes automatizados
-- Paginação de listagens
-- Upload de imagens/perfil
+Variáveis necessárias no `.env`:
+
+```
+MAILTRAP_HOST=sandbox.smtp.mailtrap.io
+MAILTRAP_PORT=2525
+MAILTRAP_USER=<seu_username>
+MAILTRAP_PASS=<seu_password>
+```
+
+### Funcionalidades
+
+| Funcionalidade | Descrição |
+|---------------|-----------|
+| Email de boas-vindas | Enviado automaticamente após registro |
+
+### Estrutura
+
+```
+src/
+├── app.ts                    # Configuração do Express
+├── server.ts                 # Ponto de entrada
+├── database/
+│   └── prisma.ts            # Cliente Prisma com PostgreSQL
+├── controllers/
+│   ├── auth.controller.ts   # Lógica de autenticação
+│   └── users.controller.ts  # Lógica de usuários
+├── routes/
+│   ├── auth.routes.ts       # Rotas de autenticação
+│   └── users.routes.ts      # Rotas de usuários
+├── middlewares/
+│   └── auth.middlewares.ts  # Middleware de autenticação JWT
+├── mail/
+│   └── email.ts            # Configuração de envio de emails
+└── types/
+    └── user.ts              # Tipos TypeScript
