@@ -1,5 +1,4 @@
 import type { Request, Response } from "express";
-import type { User, CreateUserDTO, UpdateUserDTO } from '../types/user.ts';
 import {prisma} from '../database/prisma.js';
 import type { AuthRequest } from '../middlewares/auth.middlewares.js';
 

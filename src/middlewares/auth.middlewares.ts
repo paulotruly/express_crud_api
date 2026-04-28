@@ -5,7 +5,7 @@ const SECRET = process.env._JWT_SECRET || "secret";
 
 // listando quais métodos https e rotas podem ser acessadas sem o token
 const allowedPaths = {
-  "GET": ["/users/*"], // qualquer rota de usuários
+  "GET": ["/users/*", "/posts/*"], // qualquer rota de usuários
   "POST": ["/register", "/login"], // login e registro de usuários
 } as const;
 
